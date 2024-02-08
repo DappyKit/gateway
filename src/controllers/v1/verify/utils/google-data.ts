@@ -13,13 +13,13 @@ export interface IVerifyGoogleRequest {
  * @param requestData Request data
  */
 export function extract(requestData: unknown): IVerifyGoogleRequest {
-  const {data} = requestData as IVerifyGoogleRequest
+  const { data } = requestData as IVerifyGoogleRequest
 
   if (!data) {
     throw new Error('VerifyGoogleRequest: "data" is not defined')
   }
 
   return {
-    data
+    data,
   }
 }

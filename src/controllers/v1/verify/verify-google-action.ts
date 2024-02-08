@@ -7,10 +7,11 @@ import { extract } from './utils/google-data'
 export default async (req: Request, res: Response<IVerifyResponse>, next: NextFunction): Promise<void> => {
   try {
     const config = getConfigData()
-    const {data} = extract(req.body)
+    const { data } = extract(req.body)
     const verifiedData = await verifyGoogleToken(config.googleClientId, data)
+
     if (!verifiedData.email_verified) {
-        throw new Error('Email is not verified')
+      throw new Error('Email is not verified')
     }
 
     res.json({

@@ -14,7 +14,7 @@ export interface IConfigData {
  * Config data
  */
 let configData: IConfigData = {
-  googleClientId: ''
+  googleClientId: '',
 }
 
 /**
