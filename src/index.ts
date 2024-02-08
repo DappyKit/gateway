@@ -1,4 +1,7 @@
 import app from './app'
+import { loadConfig } from './config'
+
+loadConfig()
 
 // Start server
 const PORT = process.env.PORT || 5000
