@@ -2,8 +2,14 @@
 async function start(): Promise<void> {
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    // eslint-disable-next-line no-console
-    console.log('Deployer running')
+    try {
+      // eslint-disable-next-line no-console
+      console.log('Deployer running')
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e)
+    }
+
     await new Promise(resolve => setTimeout(resolve, 1000))
   }
 }

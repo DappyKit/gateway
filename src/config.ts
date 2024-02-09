@@ -8,6 +8,21 @@ export interface IConfigData {
    * Google client id
    */
   googleClientId: string
+
+  /**
+   * Account factory address
+   */
+  accountFactoryAddress: string
+
+  /**
+   * Entry point address
+   */
+  entryPointAddress: string
+
+  /**
+   * RPC url
+   */
+  rpcUrl: string
 }
 
 /**
@@ -15,6 +30,9 @@ export interface IConfigData {
  */
 let configData: IConfigData = {
   googleClientId: '',
+  accountFactoryAddress: '',
+  entryPointAddress: '',
+  rpcUrl: '',
 }
 
 /**
@@ -25,7 +43,22 @@ export function loadConfig(): void {
     throw new Error('GOOGLE_CLIENT_ID env variable not set')
   }
 
+  if (!process.env.ACCOUNT_FACTORY_ADDRESS) {
+    throw new Error('ACCOUNT_FACTORY_ADDRESS env variable not set')
+  }
+
+  if (!process.env.RPC_URL) {
+    throw new Error('RPC_URL env variable not set')
+  }
+
+  if (!process.env.ENTRY_POINT_ADDRESS) {
+    throw new Error('ENTRY_POINT_ADDRESS env variable not set')
+  }
+
   configData.googleClientId = process.env.GOOGLE_CLIENT_ID
+  configData.accountFactoryAddress = process.env.ACCOUNT_FACTORY_ADDRESS
+  configData.entryPointAddress = process.env.ENTRY_POINT_ADDRESS
+  configData.rpcUrl = process.env.RPC_URL
 }
 
 /**

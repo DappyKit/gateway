@@ -29,5 +29,9 @@ export async function verifyGoogleToken(clientId: string, token: string): Promis
     throw new Error('Token is not intended for this client')
   }
 
+  if (!payload.email_verified) {
+    throw new Error('Email is not verified')
+  }
+
   return payload
 }

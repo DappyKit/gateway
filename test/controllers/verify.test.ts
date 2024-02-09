@@ -2,32 +2,68 @@ import app from '../../src/app'
 import supertest from 'supertest'
 import { setConfigData } from '../../src/config'
 import { stringToBase64 } from '../utils/data'
+import { getSmartAccountAddress } from '../../src/aa/account'
+import { verifyWalletData } from '../../src/controllers/v1/verify/utils/google-data'
+import { Wallet } from 'ethers'
 
 describe('Verify', () => {
+  const connection = {
+    rpcUrl: 'https://sepolia.optimism.io',
+    accountFactoryAddress: '0x9406Cc6185a346906296840746125a0E44976454',
+    entryPointAddress: '0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789',
+  }
+
+  const getSignedIdData = async () => {
+    const id = '1234567890987654321'
+    const wallet = Wallet.createRandom()
+    const eoaSignature = await wallet.signMessage(id)
+
+    return {
+      id,
+      wallet,
+      eoaSignature,
+    }
+  }
+
   beforeAll(() => {
     setConfigData({
       googleClientId: '205494731540-ctvqvohakcrfu4p21e0023h6hnfcb4ch.apps.googleusercontent.com',
+      accountFactoryAddress: '0x9406Cc6185a346906296840746125a0E44976454',
+      entryPointAddress: '0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789',
+      rpcUrl: 'https://sepolia.optimism.io',
     })
+  })
+
+  it('should correctly verify wallet data from the response', async () => {
+    const result = await getSmartAccountAddress(connection, '0xa1D2fC95b8D84b73a7A42cBe60d78213776B4Cb4')
+    expect(result).toEqual('0x14d435d97ccf8Fc8da9B9364bFD5E91729502a0b')
+
+    await expect(getSmartAccountAddress(connection, '0xa1D2fC95b8D84b73a7A42cBe60d78213776B4CB4')).rejects.toThrow(
+      /bad address checksum/,
+    )
   })
 
   it('should throw on incorrect data for google', async () => {
     const supertestApp = supertest(app)
+    const { eoaSignature } = await getSignedIdData()
 
-    let response1 = await supertestApp.post(`/v1/verify/google`).send({ data: 'test data' })
+    let response1 = await supertestApp.post(`/v1/verify/google`).send({ data: 'test data', eoaSignature })
     expect(response1.status).toBe(500)
     expect(response1.body.message).toBe('Wrong number of segments in token: test data')
 
-    response1 = await supertestApp.post(`/v1/verify/google`).send({ data: 'test.my.data' })
+    response1 = await supertestApp.post(`/v1/verify/google`).send({ data: 'test.my.data', eoaSignature })
     expect(response1.status).toBe(500)
     expect(response1.body.message).toContain("Can't parse token envelope")
 
-    response1 = await supertestApp.post(`/v1/verify/google`).send({ data: 'test.my.data' })
+    response1 = await supertestApp.post(`/v1/verify/google`).send({ data: 'test.my.data', eoaSignature })
     expect(response1.status).toBe(500)
     expect(response1.body.message).toContain("Can't parse token envelope")
   })
 
   it('should verify google token', async () => {
     const supertestApp = supertest(app)
+    const { eoaSignature } = await getSignedIdData()
+
     // base64: eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIyMDU0OTQ3MzE1NDAtY3R2cXZvaGFrY3JmdTRwMjFlMDAyM2g2aG5mY2I0Y2guYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiIyMDU0OTQ3MzE1NDAtY3R2cXZvaGFrY3JmdTRwMjFlMDAyM2g2aG5mY2I0Y2guYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDk3OTM1Njc3MTc3Mzk5Mjg1OTgiLCJlbWFpbCI6InVzZXJ0b2tlbi5wb2x5Z29uQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYmYiOjE3MDczMjE3NDksIm5hbWUiOiJVc2VyIFRva2VuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0o1T1JhQlBqQzhlRlZuUjNDZFM3YkJUVEl1Y3VLa1E1aGxGb3AwbHhTcz1zOTYtYyIsImdpdmVuX25hbWUiOiJVc2VyIiwiZmFtaWx5X25hbWUiOiJUb2tlbiIsImxvY2FsZSI6ImVuIiwiaWF0IjoxNzA3MzIyMDQ5LCJleHAiOjE3MDczMjU2NDksImp0aSI6ImQyZjI3ZjMwYmUzYTJjZmVmYmMyYTM0ZTJlYTUwNmNmNjdkYmNlOGYifQ
     const realData = {
       iss: 'https://accounts.google.com',
@@ -53,13 +89,44 @@ describe('Verify', () => {
     const realToken = tokenTemplate.replace('{data}', stringToBase64(JSON.stringify(realData)))
     const fakeToken = tokenTemplate.replace('{data}', stringToBase64(JSON.stringify(fakeData)))
 
-    let response1 = await supertestApp.post(`/v1/verify/google`).send({ data: realToken })
+    let response1 = await supertestApp.post(`/v1/verify/google`).send({ data: realToken, eoaSignature })
     expect(response1.status).toBe(500)
     // the token is correct, but it's expired
     expect(response1.body.message).toContain('Token used too late')
 
-    response1 = await supertestApp.post(`/v1/verify/google`).send({ data: fakeToken })
+    response1 = await supertestApp.post(`/v1/verify/google`).send({ data: fakeToken, eoaSignature })
     expect(response1.status).toBe(500)
     expect(response1.body.message).toContain('Invalid token signature')
+  })
+
+  it('should verify wallet data via verifyWalletData', async () => {
+    const userId = '1234567890987654321'
+    const wallet = Wallet.createRandom()
+    const signature = await wallet.signMessage(userId)
+    const data = await verifyWalletData(connection, userId, signature)
+    expect(data.recoveredAddress).toEqual(wallet.address)
+    expect(data.smartAccountAddress).toEqual(await getSmartAccountAddress(connection, wallet.address))
+  })
+
+  it('should fail in case of incorrect data verifyWalletData', async () => {
+    const userId = '1234567890987654321'
+    const wallet = Wallet.createRandom()
+    const fakeWallet = Wallet.createRandom()
+    const signature = await wallet.signMessage(userId)
+
+    // pass the wrong smart account address
+    await expect(verifyWalletData(connection, userId, signature, fakeWallet.address)).rejects.toThrow(
+      /could not decode result data/,
+    )
+  })
+
+  it('should fail with incorrect signature for verifyWalletData', async () => {
+    const userId = '1234567890987654321'
+    const wallet = Wallet.createRandom()
+    const fakeWallet = Wallet.createRandom()
+    const signature = await fakeWallet.signMessage(userId)
+    const data = await verifyWalletData(connection, userId, signature)
+    expect(data.recoveredAddress).toEqual(fakeWallet.address)
+    expect(data.smartAccountAddress).not.toEqual(await getSmartAccountAddress(connection, wallet.address))
   })
 })
