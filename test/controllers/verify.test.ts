@@ -2,7 +2,7 @@ import app from '../../src/app'
 import supertest from 'supertest'
 import { setConfigData } from '../../src/config'
 import { stringToBase64 } from '../utils/data'
-import { getSmartAccountAddress } from '../../src/aa/account'
+import { getSimpleSmartAccountAddress } from '../../src/contracts/aa/account'
 import { verifyWalletData } from '../../src/controllers/v1/verify/utils/google-data'
 import { Wallet } from 'ethers'
 
@@ -27,20 +27,21 @@ describe('Verify', () => {
 
   beforeAll(() => {
     setConfigData({
+      ...connection,
       googleClientId: '205494731540-ctvqvohakcrfu4p21e0023h6hnfcb4ch.apps.googleusercontent.com',
-      accountFactoryAddress: '0x9406Cc6185a346906296840746125a0E44976454',
-      entryPointAddress: '0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789',
-      rpcUrl: 'https://sepolia.optimism.io',
+      multicall3Address: '',
+      deployerMnemonic: '',
+      googleVerificationAddress: '',
     })
   })
 
   it('should correctly verify wallet data from the response', async () => {
-    const result = await getSmartAccountAddress(connection, '0xa1D2fC95b8D84b73a7A42cBe60d78213776B4Cb4')
+    const result = await getSimpleSmartAccountAddress(connection, '0xa1D2fC95b8D84b73a7A42cBe60d78213776B4Cb4')
     expect(result).toEqual('0x14d435d97ccf8Fc8da9B9364bFD5E91729502a0b')
 
-    await expect(getSmartAccountAddress(connection, '0xa1D2fC95b8D84b73a7A42cBe60d78213776B4CB4')).rejects.toThrow(
-      /bad address checksum/,
-    )
+    await expect(
+      getSimpleSmartAccountAddress(connection, '0xa1D2fC95b8D84b73a7A42cBe60d78213776B4CB4'),
+    ).rejects.toThrow(/bad address checksum/)
   })
 
   it('should throw on incorrect data for google', async () => {
@@ -105,7 +106,7 @@ describe('Verify', () => {
     const signature = await wallet.signMessage(userId)
     const data = await verifyWalletData(connection, userId, signature)
     expect(data.recoveredAddress).toEqual(wallet.address)
-    expect(data.smartAccountAddress).toEqual(await getSmartAccountAddress(connection, wallet.address))
+    expect(data.smartAccountAddress).toEqual(await getSimpleSmartAccountAddress(connection, wallet.address))
   })
 
   it('should fail in case of incorrect data verifyWalletData', async () => {
@@ -127,6 +128,6 @@ describe('Verify', () => {
     const signature = await fakeWallet.signMessage(userId)
     const data = await verifyWalletData(connection, userId, signature)
     expect(data.recoveredAddress).toEqual(fakeWallet.address)
-    expect(data.smartAccountAddress).not.toEqual(await getSmartAccountAddress(connection, wallet.address))
+    expect(data.smartAccountAddress).not.toEqual(await getSimpleSmartAccountAddress(connection, wallet.address))
   })
 })

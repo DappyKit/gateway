@@ -1,7 +1,6 @@
 import { Contract, JsonRpcProvider, verifyMessage } from 'ethers'
-import { getSmartAccountAddress, IConnection } from '../../../../aa/account'
+import { getSimpleSmartAccountAddress, IConnection } from '../../../../contracts/aa/account'
 import { ETH_SIGNATURE_0X_HEX_LENGTH, is0xEthAddress, is0xEthSignature } from '../../../../utils/eth'
-import { is0xHexString } from '../../../../utils/bytes'
 
 /**
  * Interface for the request to verify Google's OAuth
@@ -98,7 +97,7 @@ export async function verifyWalletData(
       throw new Error('Smart account owner does not match the signer')
     }
   } else {
-    smartAccountAddress = await getSmartAccountAddress(connection, recoveredAddress)
+    smartAccountAddress = await getSimpleSmartAccountAddress(connection, recoveredAddress)
   }
 
   return { recoveredAddress, smartAccountAddress }
