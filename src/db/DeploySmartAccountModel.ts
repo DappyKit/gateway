@@ -1,4 +1,3 @@
-import { currentYMDHIS } from './utils'
 import { db } from './index'
 
 /**
@@ -80,7 +79,7 @@ export enum DeploySmartAccountStatus {
 export async function insertDeploySmartAccount(
   item: Omit<DeploySmartAccountModel, 'id' | 'created_at' | 'updated_at'>,
 ): Promise<number> {
-  const currentDate = currentYMDHIS()
+  const currentDate = db.fn.now()
   const [id] = await db(TABLE_NAME).insert({
     ...item,
     eoa_address: item.eoa_address.toLowerCase(),

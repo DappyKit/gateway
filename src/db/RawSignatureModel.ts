@@ -1,5 +1,4 @@
 import { db } from './index'
-import { currentYMDHIS } from './utils'
 
 /**
  * The name of the table.
@@ -25,7 +24,7 @@ export interface RawSignature {
 export async function insertRawSignature(
   item: Omit<RawSignature, 'id' | 'created_at' | 'updated_at'>,
 ): Promise<number> {
-  const currentDate = currentYMDHIS()
+  const currentDate = db.fn.now()
   const [id] = await db(TABLE_NAME).insert({
     ...item,
     // for search optimization

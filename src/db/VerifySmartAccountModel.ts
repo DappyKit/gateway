@@ -1,4 +1,3 @@
-import { currentYMDHIS } from './utils'
 import { db } from './index'
 
 export const TABLE_NAME = 'verify_smart_account'
@@ -72,7 +71,7 @@ export enum VerifySmartAccountStatus {
 export async function insertVerifySmartAccount(
   item: Omit<VerifySmartAccountModel, 'id' | 'created_at' | 'updated_at'>,
 ): Promise<number> {
-  const currentDate = currentYMDHIS()
+  const currentDate = db.fn.now()
   const [id] = await db(TABLE_NAME).insert({
     ...item,
     smart_account_address: item.smart_account_address.toLowerCase(),
