@@ -1,6 +1,5 @@
-import { Contract, ContractTransactionResponse, HDNodeWallet, JsonRpcProvider, Wallet } from 'ethers'
+import { Contract, ContractTransactionResponse, hashMessage, HDNodeWallet, JsonRpcProvider, Wallet } from 'ethers'
 import UserVerificationABI from '../contracts/user-verification/UserVerificationABI.json'
-import { getBytes32Hash } from '../utils/eth'
 
 /**
  * Verification token type
@@ -20,7 +19,7 @@ export enum VerificationService {
  * @param userId User ID
  */
 export function getVerificationToken(service: VerificationService, userId: string): VerificationToken {
-  return getBytes32Hash(`${service}_${userId}`)
+  return hashMessage(`${service}_${userId}`)
 }
 
 /**

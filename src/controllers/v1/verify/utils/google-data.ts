@@ -77,17 +77,17 @@ export function extract(requestData: unknown): IVerifyGoogleRequest {
 /**
  * Verifies the wallet data
  * @param connection Connection object
- * @param userId External provider user id
+ * @param rawData Raw data
  * @param eoaSignature EOA signature
  * @param smartAccountAddress Smart account address for which EOA is the owner or skip if the default or not deployed
  */
 export async function verifyWalletData(
   connection: IConnection,
-  userId: string,
+  rawData: string,
   eoaSignature: string,
   smartAccountAddress?: string,
 ): Promise<IVerifiedWallet> {
-  const recoveredAddress = verifyMessage(userId, eoaSignature)
+  const recoveredAddress = verifyMessage(rawData, eoaSignature)
 
   if (smartAccountAddress) {
     if ((await getOwnableContract(connection.rpcUrl, smartAccountAddress).owner()) !== recoveredAddress) {

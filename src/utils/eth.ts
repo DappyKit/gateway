@@ -1,4 +1,4 @@
-import { ethers, isHexString } from 'ethers'
+import { isHexString } from 'ethers'
 import { Bytes, is0xHexString } from './bytes'
 
 export type EthAddress = Bytes<20>
@@ -28,12 +28,4 @@ export function is0xEthAddress(value: unknown): value is string {
  */
 export function is0xEthSignature(value: unknown): value is string {
   return is0xHexString(value) && value.length === ETH_SIGNATURE_0X_HEX_LENGTH
-}
-
-/**
- * Gets the hash of the given data.
- * @param data Data to hash
- */
-export function getBytes32Hash(data: string): string {
-  return ethers.keccak256(ethers.toUtf8Bytes(data))
 }

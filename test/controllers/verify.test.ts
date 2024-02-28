@@ -4,7 +4,7 @@ import { setConfigData } from '../../src/config'
 import { stringToBase64 } from '../utils/data'
 import { getSimpleSmartAccountAddress } from '../../src/contracts/aa/account'
 import { verifyWalletData } from '../../src/controllers/v1/verify/utils/google-data'
-import { Wallet } from 'ethers'
+import { Wallet, hashMessage } from 'ethers'
 
 describe('Verify', () => {
   const connection = {
@@ -105,12 +105,19 @@ describe('Verify', () => {
   })
 
   it('should verify wallet data via verifyWalletData', async () => {
-    const userId = '1234567890987654321'
+    const dataHash = hashMessage('1234567890987654321')
+    const dataHashFake = hashMessage('1234567890987654321111')
     const wallet = Wallet.createRandom()
-    const signature = await wallet.signMessage(userId)
-    const data = await verifyWalletData(connection, userId, signature)
+    const signature = await wallet.signMessage(dataHash)
+    const signatureFake = await wallet.signMessage(dataHashFake)
+
+    const data = await verifyWalletData(connection, dataHash, signature)
     expect(data.recoveredAddress).toEqual(wallet.address)
     expect(data.smartAccountAddress).toEqual(await getSimpleSmartAccountAddress(connection, wallet.address))
+
+    // check that by signing other data will be recovered another EOA address
+    const data1 = await verifyWalletData(connection, dataHash, signatureFake)
+    expect(data1.recoveredAddress).not.toEqual(wallet.address)
   })
 
   it('should fail in case of incorrect data verifyWalletData', async () => {

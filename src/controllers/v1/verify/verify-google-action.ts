@@ -83,7 +83,7 @@ export default async (req: Request, res: Response<IVerifyResponse>, next: NextFu
     const userId = verifiedData.sub
     const { recoveredAddress, smartAccountAddress: verifiedSmartAccountAddress } = await verifyWalletData(
       connection,
-      userId,
+      data,
       eoaSignature,
       smartAccountAddress,
     )

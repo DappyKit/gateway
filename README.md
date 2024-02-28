@@ -4,6 +4,19 @@ Smart Account Deployment and Verification Service.
 
 The service performs OAuth and other authentication methods verification. Based on the verified data, an on-chain [Soulbound](https://github.com/DappyKit/contracts/blob/master/contracts/UserVerification.sol) token is issued at the expense of the service, confirming the verification of a person's Smart Account. In addition to verification, the service deploys the Smart Account at its own expense for verified accounts.
 
+## Components
+
+The project consists of 3 components: API, Deployer, and Verifier.
+
+- **API**: A Node.js server written in TypeScript that handles user requests for the verification and deployment of their Smart Accounts. The service checks the correctness of external verification data, recovers the EOA (Externally Owned Account) address from signed data, and queues tasks for deployment and verification. The task queue is stored on a MySQL server.
+
+- **Deployer**: A service written in TypeScript and Node.js for deploying people's Smart Accounts based on their EOA addresses. The service utilizes multiple wallets to conduct several operations in parallel.
+
+- **Verifier**: A service written in TypeScript and Node.js for issuing Soulbound tokens to a person's Smart Account. Like the Deployer, it uses multiple wallets to perform numerous operations simultaneously.
+
+- **Demo**: To demonstrate how the project works, you can find a React project in the `demo/web` directory that authenticates a user with Google, signs the server's response, and sends the data to the DappyKit API.
+
+
 ## How does it work?
 
 The main goal of this service is to verify and deploy a person's Smart Account with just one request.
@@ -41,7 +54,7 @@ sequenceDiagram
 
 ```
 
-## Start the server
+## Start the component
 
 ```shell
 # install dependencies

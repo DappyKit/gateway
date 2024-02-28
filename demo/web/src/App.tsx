@@ -3,7 +3,7 @@ import './App.css'
 import { CredentialResponse, GoogleOAuthProvider } from '@react-oauth/google'
 import { GoogleLogin } from '@react-oauth/google'
 import { jwtDecode } from 'jwt-decode'
-import { HDNodeWallet, Wallet } from 'ethers'
+import { HDNodeWallet, Wallet, hashMessage } from 'ethers'
 
 function App() {
   const verifyUrl = 'http://localhost:1234/v1/verify/google'
@@ -11,7 +11,7 @@ function App() {
   const [credentialResponse, setCredentialResponse] =
       useState<CredentialResponse | null>()
   const [status, setStatus] = useState<string>('wait')
-  const [wallet, setWallet] = useState<HDNodeWallet>(Wallet.createRandom())
+  const [wallet] = useState<HDNodeWallet>(Wallet.createRandom())
 
   const user = useMemo(() => {
     if (!credentialResponse?.credential) return
@@ -36,7 +36,11 @@ function App() {
           </GoogleOAuthProvider>
 
           <button className="btn btn-primary mt-5" disabled={!Boolean(user)} onClick={async ()=>{
-            const eoaSignature = await wallet.signMessage(user?.sub as string)
+            if (!credentialResponse?.credential) {
+              throw new Error('Credential is not defined')
+            }
+
+            const eoaSignature = await wallet.signMessage(hashMessage(credentialResponse!.credential))
 
             try {
               const response = await (await fetch(verifyUrl, {

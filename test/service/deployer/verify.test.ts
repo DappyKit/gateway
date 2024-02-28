@@ -3,9 +3,8 @@ import {
   getSimpleSmartAccountAddress,
   isContractDeployed,
 } from '../../../src/contracts/aa/account'
-import { Contract, JsonRpcProvider, Wallet } from 'ethers'
+import { Contract, hashMessage, JsonRpcProvider, Wallet } from 'ethers'
 import UserVerificationABI from '../../../src/contracts/user-verification/UserVerificationABI.json'
-import { getBytes32Hash } from '../../../src/utils/eth'
 import { generateRandomString } from '../../utils/data'
 import { getConfigData, loadConfig } from '../../../src/config'
 
@@ -34,7 +33,7 @@ describe('Verify', () => {
     expect(await isContractDeployed(rpcUrl, smartAccountAddress)).toEqual(true)
 
     // issue verification token
-    const tokenId = getBytes32Hash(generateRandomString())
+    const tokenId = hashMessage(generateRandomString())
     expect(await userVerificationContract.balanceOf(userWallet.address)).toEqual(0n)
     await userVerificationContract.issueToken(userWallet.address, tokenId)
     expect(await userVerificationContract.balanceOf(userWallet.address)).toEqual(1n)
