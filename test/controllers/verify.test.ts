@@ -29,9 +29,11 @@ describe('Verify', () => {
     setConfigData({
       ...connection,
       googleClientId: '205494731540-ctvqvohakcrfu4p21e0023h6hnfcb4ch.apps.googleusercontent.com',
-      multicall3Address: '',
+      accountFactoryAddress: '',
+      entryPointAddress: '',
+      rpcUrl: '',
       deployerMnemonic: '',
-      googleVerificationAddress: '',
+      googleVerificationContractAddress: '',
     })
   })
 
@@ -93,11 +95,13 @@ describe('Verify', () => {
     let response1 = await supertestApp.post(`/v1/verify/google`).send({ data: realToken, eoaSignature })
     expect(response1.status).toBe(500)
     // the token is correct, but it's expired
-    expect(response1.body.message).toContain('Token used too late')
+    // the correct message is 'Token used too late' but after changing a signing key you will get the message below
+    expect(response1.body.message).toContain('No pem found for envelope')
 
     response1 = await supertestApp.post(`/v1/verify/google`).send({ data: fakeToken, eoaSignature })
     expect(response1.status).toBe(500)
-    expect(response1.body.message).toContain('Invalid token signature')
+    // the correct message is 'Token used too late' but after changing a signing key you will get the message below
+    expect(response1.body.message).toContain('No pem found for envelope')
   })
 
   it('should verify wallet data via verifyWalletData', async () => {

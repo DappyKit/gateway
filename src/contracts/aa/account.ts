@@ -1,5 +1,5 @@
 import { BytesLike, concat, Contract, ContractTransactionResponse, HDNodeWallet, JsonRpcProvider, Wallet } from 'ethers'
-import SimpleAccountFactoryABI from './SimpleAccountFactoryABI.json'
+import { getSimpleAccountFactoryContract } from '../simple-account-factory'
 
 /**
  * Connection object interface
@@ -38,7 +38,7 @@ export interface IAccountError {
  * @param salt Salt for the smart account
  */
 export function getAccountInitCode(accountFactoryAddress: string, owner: string, salt = 0): BytesLike {
-  const factory = new Contract(accountFactoryAddress, SimpleAccountFactoryABI)
+  const factory = getSimpleAccountFactoryContract(accountFactoryAddress)
   const data = factory.interface.encodeFunctionData('createAccount', [owner, salt])
 
   return concat([accountFactoryAddress, data])
@@ -56,7 +56,7 @@ export async function getSimpleSmartAccountAddress(connection: IConnection, eoaA
     throw new Error('rpcUrl, accountFactoryAddress, entryPointAddress, and eoaAddress are required')
   }
 
-  const factory = new Contract(accountFactoryAddress, SimpleAccountFactoryABI, new JsonRpcProvider(rpcUrl))
+  const factory = getSimpleAccountFactoryContract(accountFactoryAddress, rpcUrl)
   const method = 'getAddress(address,uint256)'
 
   return factory[method].staticCall(eoaAddress, '0')
@@ -79,22 +79,18 @@ export async function deploySimpleSmartAccount(
     throw new Error('rpcUrl, accountFactoryAddress and eoaAddress are required')
   }
 
-  const factory = new Contract(
-    accountFactoryAddress,
-    SimpleAccountFactoryABI,
-    serviceWallet.connect(new JsonRpcProvider(rpcUrl)),
-  )
+  const factory = getSimpleAccountFactoryContract(accountFactoryAddress, rpcUrl, serviceWallet)
 
   return factory.createAccount(eoaAddress, '0')
 }
 
 /**
  * Check if the contract is deployed
- * @param connection Connection object
+ * @param rpcUrl RPC URL
  * @param address Address of the contract
  */
-export async function isContractDeployed(connection: IConnection, address: string): Promise<boolean> {
-  const contract = new Contract(address, [], new JsonRpcProvider(connection.rpcUrl))
+export async function isContractDeployed(rpcUrl: string, address: string): Promise<boolean> {
+  const contract = new Contract(address, [], new JsonRpcProvider(rpcUrl))
 
   return (await contract.getDeployedCode()) !== null
 }

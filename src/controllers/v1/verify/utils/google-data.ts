@@ -1,6 +1,7 @@
-import { Contract, JsonRpcProvider, verifyMessage } from 'ethers'
+import { verifyMessage } from 'ethers'
 import { getSimpleSmartAccountAddress, IConnection } from '../../../../contracts/aa/account'
-import { ETH_SIGNATURE_0X_HEX_LENGTH, is0xEthAddress, is0xEthSignature } from '../../../../utils/eth'
+import { ETH_SIGNATURE_0X_HEX_LENGTH, is0xEthSignature } from '../../../../utils/eth'
+import { getOwnableContract } from '../../../../contracts/utils'
 
 /**
  * Interface for the request to verify Google's OAuth
@@ -59,9 +60,11 @@ export function extract(requestData: unknown): IVerifyGoogleRequest {
   }
 
   if (smartAccountAddress) {
-    if (!is0xEthAddress(smartAccountAddress)) {
-      throw new Error('VerifyGoogleRequest: "smartAccountAddress" is not a valid address')
-    }
+    // an ability to verify already deployed smart account can be added later
+    // verify an address with: is0xEthAddress(smartAccountAddress)
+    throw new Error(
+      'The smart account address is undefined. Verification is available only for accounts that have not been deployed.',
+    )
   }
 
   return {
@@ -87,13 +90,7 @@ export async function verifyWalletData(
   const recoveredAddress = verifyMessage(userId, eoaSignature)
 
   if (smartAccountAddress) {
-    const contract = new Contract(
-      smartAccountAddress,
-      ['function owner() view returns (address)'],
-      new JsonRpcProvider(connection.rpcUrl),
-    )
-
-    if ((await contract.owner()) !== recoveredAddress) {
+    if ((await getOwnableContract(connection.rpcUrl, smartAccountAddress).owner()) !== recoveredAddress) {
       throw new Error('Smart account owner does not match the signer')
     }
   } else {

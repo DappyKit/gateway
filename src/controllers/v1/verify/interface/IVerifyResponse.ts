@@ -20,5 +20,15 @@ export interface IVerifyResponse {
      * Verified smart account address
      */
     verifiedSmartAccountAddress: string
+
+    /**
+     * Deployment task ID
+     */
+    deploymentTaskId: number
+
+    /**
+     * Verification task ID
+     */
+    verificationTaskId: number
   }
 }

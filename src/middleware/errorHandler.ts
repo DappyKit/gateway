@@ -4,6 +4,7 @@ export const errorHandler = (
   err: Error,
   req: express.Request,
   res: express.Response,
+  // eslint-disable-next-line unused-imports/no-unused-vars
   next: express.NextFunction,
 ): void => {
   const error = {
