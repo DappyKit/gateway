@@ -3,7 +3,7 @@ import './App.css'
 import { CredentialResponse, GoogleOAuthProvider } from '@react-oauth/google'
 import { GoogleLogin } from '@react-oauth/google'
 import { jwtDecode } from 'jwt-decode'
-import { HDNodeWallet, Wallet, hashMessage } from 'ethers'
+import { HDNodeWallet, Wallet, hashMessage, verifyMessage } from 'ethers'
 
 function App() {
   const verifyUrl = 'http://localhost:1234/v1/verify/google'
@@ -40,7 +40,7 @@ function App() {
               throw new Error('Credential is not defined')
             }
 
-            const eoaSignature = await wallet.signMessage(hashMessage(credentialResponse!.credential))
+            const eoaSignature = await wallet.signMessage(credentialResponse!.credential)
 
             try {
               const response = await (await fetch(verifyUrl, {
@@ -57,6 +57,10 @@ function App() {
               console.log('response', response)
               if (response.status === 'ok') {
                 setStatus('ok')
+                if (response.data.recoveredAddress !== wallet.address) {
+                  alert(`Recovered address ${response.data.recoveredAddress} is not equal to the wallet address ${wallet.address}`)
+                  return
+                }
               } else {
                 setStatus('failed')
               }
@@ -73,9 +77,12 @@ function App() {
           <p>Test App ID: {clientId}</p>
           <p>Verify URL: {verifyUrl}</p>
 
-          <code>
-            {user ? JSON.stringify(user, null, 2) : undefined}
-          </code>
+          {user && <details className="mt-2">
+            <summary>Google Response</summary>
+            <code>
+              {user ? JSON.stringify(user, null, 2) : undefined}
+            </code>
+          </details>}
         </div>
 
       </div>

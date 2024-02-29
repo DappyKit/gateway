@@ -78,14 +78,14 @@ export default async (req: Request, res: Response<IVerifyResponse>, next: NextFu
       accountFactoryAddress,
       entryPointAddress,
     }
-    const { data, eoaSignature, smartAccountAddress } = extract(req.body)
+
+    const { data, eoaSignature } = extract(req.body)
     const verifiedData = await verifyGoogleToken(googleClientId, data)
     const userId = verifiedData.sub
     const { recoveredAddress, smartAccountAddress: verifiedSmartAccountAddress } = await verifyWalletData(
       connection,
       data,
       eoaSignature,
-      smartAccountAddress,
     )
 
     const { deploymentTaskId, verificationTaskId } = await insertInfo(
