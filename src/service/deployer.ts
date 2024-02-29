@@ -19,7 +19,7 @@ const WAIT_CONFIRMATIONS = 5
  */
 const MIN_WALLET_BALANCE = parseEther('0.01')
 
-const IS_DEV = process.env.DEPLOYER_ENV === 'dev'
+const IS_DEV = process.env.DEPLOYER_ENV === 'development'
 
 export interface WalletInfo {
   wallet: HDNodeWallet

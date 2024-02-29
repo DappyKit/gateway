@@ -77,6 +77,9 @@ FLUSH PRIVILEGES;
 # apply migrations
 npx knex migrate:latest --env production
 
+# start verification API server
+npx pm2 start npm --name "DappyKit Verification API" -- run start
+
 # start deployer service via PM2
 npx pm2 start npm --name "DappyKit Deployer" -- run start-deployer
 
