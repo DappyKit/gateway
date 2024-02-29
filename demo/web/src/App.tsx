@@ -6,11 +6,17 @@ import { jwtDecode } from 'jwt-decode'
 import { HDNodeWallet, Wallet } from 'ethers'
 
 function App() {
-  const verifyUrl = 'http://localhost:1234/v1/verify/google'
-  const clientId = '205494731540-ctvqvohakcrfu4p21e0023h6hnfcb4ch.apps.googleusercontent.com'
+  const verifyUrl = process.env.REACT_APP_VERIFY_GOOGLE_URL as string
+  const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID as string
+
+  if (!(verifyUrl && clientId)) {
+    throw new Error('REACT_APP_VERIFY_GOOGLE_URL and REACT_APP_GOOGLE_CLIENT_ID env variables are required')
+  }
+
   const [credentialResponse, setCredentialResponse] =
       useState<CredentialResponse | null>()
   const [status, setStatus] = useState<string>('wait')
+  const [smartAccountAddress, setSmartAccountAddress] = useState<string>('')
   const [wallet] = useState<HDNodeWallet>(Wallet.createRandom())
 
   const user = useMemo(() => {
@@ -61,6 +67,8 @@ function App() {
                   alert(`Recovered address ${response.data.recoveredAddress} is not equal to the wallet address ${wallet.address}`)
                   return
                 }
+
+                setSmartAccountAddress(response.data.verifiedSmartAccountAddress)
               } else {
                 setStatus('failed')
               }
@@ -73,7 +81,8 @@ function App() {
         <h2 className="mt-5">Status: {status}</h2>
 
         <div className="mt-5">
-          <p>Wallet Address: {wallet?.address}</p>
+          <p>EOA Wallet Address: {wallet?.address}</p>
+          {smartAccountAddress && <p><strong>Smart Account Address: {smartAccountAddress}</strong></p>}
           <p>Test App ID: {clientId}</p>
           <p>Verify URL: {verifyUrl}</p>
 
