@@ -3,7 +3,7 @@ import './App.css'
 import { CredentialResponse, GoogleOAuthProvider } from '@react-oauth/google'
 import { GoogleLogin } from '@react-oauth/google'
 import { jwtDecode } from 'jwt-decode'
-import { HDNodeWallet, Wallet, hashMessage, verifyMessage } from 'ethers'
+import { HDNodeWallet, Wallet } from 'ethers'
 
 function App() {
   const verifyUrl = 'http://localhost:1234/v1/verify/google'
