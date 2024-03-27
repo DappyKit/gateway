@@ -4,6 +4,13 @@ Smart Account Deployment and Verification Service.
 
 The service performs OAuth and other authentication methods verification. Based on the verified data, an on-chain [Soulbound](https://github.com/DappyKit/contracts/blob/master/contracts/UserVerification.sol) token is issued at the expense of the service, confirming the verification of a person's Smart Account. In addition to verification, the service deploys the Smart Account at its own expense for verified accounts.
 
+### OP Sepolia
+* Demo: https://verify-demo-test.dappykit.org
+* API: https://verify-api-test.dappykit.org
+
+### OP Mainnet
+* API: https://verify.dappykit.org
+
 ## Components
 
 The project consists of 3 components: API, Deployer, and Verifier.
@@ -54,56 +61,6 @@ sequenceDiagram
 
 ```
 
-## Start the component
+## Start components & Development
 
-```shell
-# install dependencies
-npm ci
-
-# copy and fill the env
-cp example.env .env
-
-# create DB
-mysql -u root -p < ./migrations/db.sql
-
-# start interactive mode for MySQL user creation:
-mysql -u root -p
-
-# and run commands
-CREATE USER 'dappy_verify_deploy'@'localhost' IDENTIFIED BY 'STRONG_PASSWORD_HERE';
-GRANT ALL PRIVILEGES ON dappy_verify_deploy.* TO 'dappy_verify_deploy'@'localhost';
-FLUSH PRIVILEGES;
-
-# apply migrations
-npx knex migrate:latest --env production
-
-# start verification API server
-npx pm2 start npm --name "DappyKit Verification API" -- run start
-
-# start deployer service via PM2
-npx pm2 start npm --name "DappyKit Deployer" -- run start-deployer
-
-# OR start the server manually
-npm run start
-```
-
-## Development
-
-```shell
-# create new migration
-npx knex migrate:make my_new_migration
-```
-
-## Start Demo UI
-
-```shell
-# go to "Start the server" section and start the server
-# go to web directory
-cd demo/web
-
-# install dependencies
-npm ci
-
-# start the UI
-npm run start
-```
+[Documentation](./docs/START_COMPONENTS.md)
