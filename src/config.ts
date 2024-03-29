@@ -33,6 +33,21 @@ export interface IConfigData {
    * Dappy verification contract address for Google
    */
   googleVerificationContractAddress: string
+
+  /**
+   * Neynar API key
+   */
+  neynarApiKey: string
+
+  /**
+   * Allowed URLs for Farcaster Frames
+   */
+  farcasterAllowedUrls: string[]
+
+  /**
+   * Max minutes for Farcaster data
+   */
+  farcasterMaxMinutesData: number
 }
 
 /**
@@ -45,6 +60,9 @@ let configData: IConfigData = {
   rpcUrl: '',
   deployerMnemonic: '',
   googleVerificationContractAddress: '',
+  neynarApiKey: '',
+  farcasterAllowedUrls: [],
+  farcasterMaxMinutesData: 0,
 }
 
 /**
@@ -75,12 +93,35 @@ export function loadConfig(): void {
     throw new Error('GOOGLE_VERIFICATION_CONTRACT_ADDRESS env variable not set')
   }
 
+  if (!process.env.NEYNAR_API_KEY) {
+    throw new Error('NEYNAR_API_KEY env variable not set')
+  }
+
+  if (!process.env.FARCASTER_ALLOWED_URLS) {
+    throw new Error('FARCASTER_ALLOWED_URLS env variable not set')
+  }
+
+  const farcasterAllowedUrls = process.env.FARCASTER_ALLOWED_URLS.split(',')
+    .map(item => item.trim())
+    .filter(Boolean)
+
+  if (!farcasterAllowedUrls.length) {
+    throw new Error('FARCASTER_ALLOWED_URLS env variable is empty')
+  }
+
+  if (!process.env.FARCASTER_MAX_MINUTES_DATA) {
+    throw new Error('FARCASTER_MAX_MINUTES_DATA env variable not set')
+  }
+
   configData.googleClientId = process.env.GOOGLE_CLIENT_ID
   configData.accountFactoryAddress = process.env.ACCOUNT_FACTORY_ADDRESS
   configData.entryPointAddress = process.env.ENTRY_POINT_ADDRESS
   configData.rpcUrl = process.env.RPC_URL
   configData.deployerMnemonic = process.env.DEPLOYER_MNEMONIC
   configData.googleVerificationContractAddress = process.env.GOOGLE_VERIFICATION_CONTRACT_ADDRESS
+  configData.neynarApiKey = process.env.NEYNAR_API_KEY
+  configData.farcasterAllowedUrls = farcasterAllowedUrls
+  configData.farcasterMaxMinutesData = Number(process.env.FARCASTER_MAX_MINUTES_DATA)
 }
 
 /**
