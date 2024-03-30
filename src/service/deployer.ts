@@ -8,6 +8,8 @@ import * as Verify from '../db/VerifySmartAccountModel'
 import { VerifySmartAccountModel, VerifySmartAccountStatus } from '../db/VerifySmartAccountModel'
 import { DeploySmartAccountModel } from '../db/DeploySmartAccountModel'
 import { getVerificationContract, sendVerificationToken } from '../verification/token'
+import { getRawSignatureById } from '../db/RawSignatureModel'
+import { AuthService } from '../db/ServiceModel'
 
 /**
  * Wait confirmations
@@ -196,8 +198,15 @@ async function start(): Promise<void> {
     return currentWallet
   }
 
-  const { deployerMnemonic, rpcUrl, accountFactoryAddress, entryPointAddress, googleVerificationContractAddress } =
-    getConfigData()
+  const {
+    deployerMnemonic,
+    rpcUrl,
+    accountFactoryAddress,
+    entryPointAddress,
+    googleVerificationContractAddress,
+    farcasterVerificationContractAddress,
+    telegramVerificationContractAddress,
+  } = getConfigData()
 
   const connection: IConnection = {
     rpcUrl,
@@ -212,6 +221,8 @@ async function start(): Promise<void> {
   await printBalances(balances)
   await checkBalances(balances)
   await checkOwnership(rpcUrl, googleVerificationContractAddress, wallets)
+  await checkOwnership(rpcUrl, farcasterVerificationContractAddress, wallets)
+  await checkOwnership(rpcUrl, telegramVerificationContractAddress, wallets)
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -219,19 +230,29 @@ async function start(): Promise<void> {
 
     try {
       const deployTask = await Deploy.getOneByStatus(Deploy.DeploySmartAccountStatus.IDLE)
-      const verifyTask = await Verify.getOneByStatus(VerifySmartAccountStatus.IDLE)
-
-      if (!(deployTask || verifyTask)) {
-        // eslint-disable-next-line no-continue
-        continue
-      }
 
       if (deployTask) {
         await deploy(deployTask, nextWallet(), connection)
       }
 
+      const verifyTask = await Verify.getOneByStatus(VerifySmartAccountStatus.IDLE)
+
       if (verifyTask) {
-        await verify(verifyTask, nextWallet(), connection.rpcUrl, googleVerificationContractAddress)
+        const rawSignature = await getRawSignatureById(Number(verifyTask.raw_signature_id))
+
+        let verificationContractAddress: string
+
+        if (rawSignature.service_id === AuthService.GOOGLE) {
+          verificationContractAddress = googleVerificationContractAddress
+        } else if (rawSignature.service_id === AuthService.FARCASTER) {
+          verificationContractAddress = farcasterVerificationContractAddress
+        } else if (rawSignature.service_id === AuthService.TELEGRAM) {
+          verificationContractAddress = telegramVerificationContractAddress
+        } else {
+          throw new Error(`Unknown service ID: ${rawSignature.service_id}`)
+        }
+
+        await verify(verifyTask, nextWallet(), connection.rpcUrl, verificationContractAddress)
       }
     } catch (e) {
       // eslint-disable-next-line no-console

@@ -39,6 +39,8 @@ describe('Verify', () => {
       rpcUrl: '',
       deployerMnemonic: '',
       googleVerificationContractAddress: '',
+      farcasterVerificationContractAddress: '',
+      telegramVerificationContractAddress: '',
       neynarApiKey: '',
       farcasterAllowedUrls: [],
       farcasterMaxMinutesData: 0,

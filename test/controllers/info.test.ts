@@ -13,6 +13,8 @@ describe('Info OP mainnet', () => {
       googleClientId: '---',
       deployerMnemonic: '',
       googleVerificationContractAddress: '0xBA44aaa2809931401ec099D798A5376cd678a12a',
+      farcasterVerificationContractAddress: '0x02e4227ed20379db2999511609b8e2b28f73f0e0',
+      telegramVerificationContractAddress: '',
       neynarApiKey: '---',
       farcasterAllowedUrls: [],
       farcasterMaxMinutesData: 0,
@@ -41,6 +43,19 @@ describe('Info OP mainnet', () => {
       optimismMainnet: {
         isDeployed: true,
         verifiedBy: [],
+      },
+    })
+  })
+
+  it('should return info about deployed and verified smart account', async () => {
+    const address = '0xDb0c6C27C2C1ea4193d808bAB25be0Fc27fa4867'
+    const supertestApp = supertest(app)
+    const data = (await supertestApp.get(`/v1/info/smart-account?address=${address}`)).body as ISmartAccountInfoResponse
+    expect(data).toEqual({
+      smartAccountAddress: '0x4FFC738603dDAa0E1CeDe748166E5f7b73DDa7Dc',
+      optimismMainnet: {
+        isDeployed: true,
+        verifiedBy: ['farcaster'],
       },
     })
   })

@@ -35,6 +35,16 @@ export interface IConfigData {
   googleVerificationContractAddress: string
 
   /**
+   * Farcaster verification contract address
+   */
+  farcasterVerificationContractAddress: string
+
+  /**
+   * Telegram verification contract address
+   */
+  telegramVerificationContractAddress: string
+
+  /**
    * Neynar API key
    */
   neynarApiKey: string
@@ -60,6 +70,8 @@ let configData: IConfigData = {
   rpcUrl: '',
   deployerMnemonic: '',
   googleVerificationContractAddress: '',
+  farcasterVerificationContractAddress: '',
+  telegramVerificationContractAddress: '',
   neynarApiKey: '',
   farcasterAllowedUrls: [],
   farcasterMaxMinutesData: 0,
@@ -93,6 +105,14 @@ export function loadConfig(): void {
     throw new Error('GOOGLE_VERIFICATION_CONTRACT_ADDRESS env variable not set')
   }
 
+  if (!process.env.FARCASTER_VERIFICATION_CONTRACT_ADDRESS) {
+    throw new Error('FARCASTER_VERIFICATION_CONTRACT_ADDRESS env variable not set')
+  }
+
+  if (!process.env.TELEGRAM_VERIFICATION_CONTRACT_ADDRESS) {
+    throw new Error('TELEGRAM_VERIFICATION_CONTRACT_ADDRESS env variable not set')
+  }
+
   if (!process.env.NEYNAR_API_KEY) {
     throw new Error('NEYNAR_API_KEY env variable not set')
   }
@@ -119,6 +139,8 @@ export function loadConfig(): void {
   configData.rpcUrl = process.env.RPC_URL
   configData.deployerMnemonic = process.env.DEPLOYER_MNEMONIC
   configData.googleVerificationContractAddress = process.env.GOOGLE_VERIFICATION_CONTRACT_ADDRESS
+  configData.farcasterVerificationContractAddress = process.env.FARCASTER_VERIFICATION_CONTRACT_ADDRESS
+  configData.telegramVerificationContractAddress = process.env.TELEGRAM_VERIFICATION_CONTRACT_ADDRESS
   configData.neynarApiKey = process.env.NEYNAR_API_KEY
   configData.farcasterAllowedUrls = farcasterAllowedUrls
   configData.farcasterMaxMinutesData = Number(process.env.FARCASTER_MAX_MINUTES_DATA)
