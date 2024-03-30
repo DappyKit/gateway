@@ -2,7 +2,7 @@ import { getPublicUrl } from '../utils/url'
 import { getPage } from '../utils/page'
 
 export default function done(): string {
-  const previewImage = getPublicUrl(`static/done.jpg`)
+  const previewImage = getPublicUrl(`static/done.jpg?1`)
   const appUrl = getPublicUrl(`v1/farcaster/verify`)
   const message = encodeURIComponent(`🚀 Awesome! I just created a @dappykit account without leaving Warpcast!`)
   const buttonUrl = `https://warpcast.com/~/compose?text=${message}&embeds[]=${appUrl}`

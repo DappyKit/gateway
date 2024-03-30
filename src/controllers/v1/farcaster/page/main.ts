@@ -2,7 +2,7 @@ import { getPublicUrl } from '../utils/url'
 import { getPage } from '../utils/page'
 
 export default function main(): string {
-  const previewImage = getPublicUrl(`static/main.jpg`)
+  const previewImage = getPublicUrl(`static/main.jpg?1`)
   const content = `
     <meta property="fc:frame" content="vNext" />
     <meta name="fc:frame:image" content="${previewImage}">
