@@ -58,6 +58,11 @@ export interface IConfigData {
    * Max minutes for Farcaster data
    */
   farcasterMaxMinutesData: number
+
+  /**
+   * Full URL of the public site
+   */
+  publicUrl: string
 }
 
 /**
@@ -75,6 +80,7 @@ let configData: IConfigData = {
   neynarApiKey: '',
   farcasterAllowedUrls: [],
   farcasterMaxMinutesData: 0,
+  publicUrl: '',
 }
 
 /**
@@ -133,6 +139,10 @@ export function loadConfig(): void {
     throw new Error('FARCASTER_MAX_MINUTES_DATA env variable not set')
   }
 
+  if (!process.env.PUBLIC_URL) {
+    throw new Error('PUBLIC_URL env variable not set')
+  }
+
   configData.googleClientId = process.env.GOOGLE_CLIENT_ID
   configData.accountFactoryAddress = process.env.ACCOUNT_FACTORY_ADDRESS
   configData.entryPointAddress = process.env.ENTRY_POINT_ADDRESS
@@ -144,6 +154,7 @@ export function loadConfig(): void {
   configData.neynarApiKey = process.env.NEYNAR_API_KEY
   configData.farcasterAllowedUrls = farcasterAllowedUrls
   configData.farcasterMaxMinutesData = Number(process.env.FARCASTER_MAX_MINUTES_DATA)
+  configData.publicUrl = process.env.PUBLIC_URL
 }
 
 /**
