@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import done from './page/done'
-import { RpcHelperUtils, SDK } from '@dappykit/sdk'
-import { optimismMainnetConfig } from '@dappykit/sdk/dist/src/network-config'
+import { RpcHelperUtils, SDK, Config } from '@dappykit/sdk'
 import { Wallet } from 'ethers'
 
 export default async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -11,7 +10,7 @@ export default async (req: Request, res: Response, next: NextFunction): Promise<
 
       if (clickData) {
         const sdk = new SDK(
-          optimismMainnetConfig,
+          Config.optimismMainnetConfig,
           RpcHelperUtils.convertHDNodeWalletToAccountSigner(Wallet.createRandom()),
         )
 
