@@ -18,6 +18,7 @@ describe('Info OP mainnet', () => {
       neynarApiKey: '---',
       farcasterAllowedUrls: [],
       farcasterMaxMinutesData: 0,
+      publicUrl: '',
     })
   })
 

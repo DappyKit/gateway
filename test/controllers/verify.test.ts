@@ -44,6 +44,7 @@ describe('Verify', () => {
       neynarApiKey: '',
       farcasterAllowedUrls: [],
       farcasterMaxMinutesData: 0,
+      publicUrl: '',
     })
 
     // Rollback the migration (if any)
