@@ -14,7 +14,7 @@ import { AuthService } from '../db/ServiceModel'
 /**
  * Wait confirmations
  */
-const WAIT_CONFIRMATIONS = 5
+const WAIT_CONFIRMATIONS = 15
 
 /**
  * Minimum wallet balance
