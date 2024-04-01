@@ -4,12 +4,15 @@ Smart Account Deployment and Verification Service.
 
 The service performs OAuth and other authentication methods verification. Based on the verified data, an on-chain [Soulbound](https://github.com/DappyKit/contracts/blob/master/contracts/UserVerification.sol) token is issued at the expense of the service, confirming the verification of a person's Smart Account. In addition to verification, the service deploys the Smart Account at its own expense for verified accounts.
 
+### OP Mainnet
+* API: https://verify.dappykit.org
+
 ### OP Sepolia
 * Demo: https://verify-demo-test.dappykit.org
 * API: https://verify-api-test.dappykit.org
 
-### OP Mainnet
-* API: https://verify.dappykit.org
+### Farcaster Frame
+* https://verify.dappykit.org/v1/farcaster/verify
 
 ## Components
 
