@@ -45,6 +45,7 @@ describe('Verify', () => {
       farcasterAllowedUrls: [],
       farcasterMaxMinutesData: 0,
       publicUrl: '',
+      clickcasterApiKey: '',
     })
 
     // Rollback the migration (if any)
