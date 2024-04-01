@@ -63,6 +63,11 @@ export interface IConfigData {
    * Full URL of the public site
    */
   publicUrl: string
+
+  /**
+   * Clickcaster API key
+   */
+  clickcasterApiKey: string
 }
 
 /**
@@ -81,6 +86,7 @@ let configData: IConfigData = {
   farcasterAllowedUrls: [],
   farcasterMaxMinutesData: 0,
   publicUrl: '',
+  clickcasterApiKey: '',
 }
 
 /**
@@ -143,6 +149,10 @@ export function loadConfig(): void {
     throw new Error('PUBLIC_URL env variable not set')
   }
 
+  if (!process.env.CLICKCASTER_API_KEY) {
+    throw new Error('CLICKCASTER_API_KEY env variable not set')
+  }
+
   configData.googleClientId = process.env.GOOGLE_CLIENT_ID
   configData.accountFactoryAddress = process.env.ACCOUNT_FACTORY_ADDRESS
   configData.entryPointAddress = process.env.ENTRY_POINT_ADDRESS
@@ -155,6 +165,7 @@ export function loadConfig(): void {
   configData.farcasterAllowedUrls = farcasterAllowedUrls
   configData.farcasterMaxMinutesData = Number(process.env.FARCASTER_MAX_MINUTES_DATA)
   configData.publicUrl = process.env.PUBLIC_URL
+  configData.clickcasterApiKey = process.env.CLICKCASTER_API_KEY
 }
 
 /**

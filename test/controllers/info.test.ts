@@ -19,6 +19,7 @@ describe('Info OP mainnet', () => {
       farcasterAllowedUrls: [],
       farcasterMaxMinutesData: 0,
       publicUrl: '',
+      clickcasterApiKey: '',
     })
   })
 
