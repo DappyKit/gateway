@@ -10,6 +10,7 @@ import { DeploySmartAccountModel } from '../db/DeploySmartAccountModel'
 import { getVerificationContract, sendVerificationToken } from '../verification/token'
 import { getRawSignatureById } from '../db/RawSignatureModel'
 import { AuthService } from '../db/ServiceModel'
+import { extractJsonNetworks } from '../db/utils'
 
 /**
  * Wait confirmations
@@ -85,12 +86,12 @@ async function getBalances(provider: JsonRpcProvider, wallets: HDNodeWallet[]): 
  * Deploy the smart account
  * @param deployTask Deploy task
  * @param currentWallet Current wallet
- * @param connection Connection
+ * @param connections Connections list
  */
 async function deploy(
   deployTask: DeploySmartAccountModel,
   currentWallet: HDNodeWallet,
-  connection: IConnection,
+  connections: { [key: string]: IConnection },
 ): Promise<void> {
   await Deploy.updateStatusById(deployTask.id, Deploy.DeploySmartAccountStatus.IN_PROGRESS)
   const eoaAddress = `0x${deployTask.eoa_address}`
@@ -100,18 +101,28 @@ async function deploy(
     `Deployment task ID found: ${deployTask.id}. Deploying the smart account ${smartAccountAddress} for the EOA: ${eoaAddress}`,
   )
   try {
-    const tx = await deploySimpleSmartAccount(currentWallet, connection, eoaAddress)
-    await Deploy.updateStatusById(
-      deployTask.id,
-      Deploy.DeploySmartAccountStatus.SUCCESS,
-      JSON.stringify({ txHash: tx.hash }),
-    )
+    for (const network of extractJsonNetworks(deployTask.networks)) {
+      const connection = connections[network]
+      log(`Deploying on network: ${network}...`)
 
-    if (!IS_DEV) {
-      await tx.wait(WAIT_CONFIRMATIONS)
+      if (!connection) {
+        log(`Network ${network} is empty. Continue.`)
+        continue
+      }
+
+      const tx = await deploySimpleSmartAccount(currentWallet, connection, eoaAddress)
+      await Deploy.updateStatusById(
+        deployTask.id,
+        Deploy.DeploySmartAccountStatus.SUCCESS,
+        JSON.stringify({ txHash: tx.hash }),
+      )
+
+      if (!IS_DEV) {
+        await tx.wait(WAIT_CONFIRMATIONS)
+      }
+
+      log(`Smart account ${smartAccountAddress} deployed successfully!`)
     }
-
-    log(`Smart account ${smartAccountAddress} deployed successfully!`)
   } catch (e) {
     const errorMessage = (e as Error).message
     log(`Deployment failed with error: ${errorMessage}`)
@@ -127,30 +138,39 @@ async function deploy(
  * Send verify token to the address
  * @param verifyTask Verify task
  * @param currentWallet Current wallet
- * @param rpcUrl RPC URL
+ * @param connections Connections list
  * @param verificationContractAddress Verification contract address
  */
 async function verify(
   verifyTask: VerifySmartAccountModel,
   currentWallet: HDNodeWallet,
-  rpcUrl: string,
+  connections: { [key: string]: IConnection },
   verificationContractAddress: string,
 ): Promise<void> {
   await Verify.updateStatusById(verifyTask.id, Verify.VerifySmartAccountStatus.IN_PROGRESS)
   const smartAccountAddress = `0x${verifyTask.smart_account_address}`
   log(`Verification task ID found: ${verifyTask.id}. Verifying the smart account: ${smartAccountAddress} `)
   try {
-    const tx = await sendVerificationToken(currentWallet, rpcUrl, verificationContractAddress, smartAccountAddress)
-    await Verify.updateStatusById(
-      verifyTask.id,
-      Verify.VerifySmartAccountStatus.SUCCESS,
-      JSON.stringify({ txHash: tx.hash }),
-    )
+    for (const network of extractJsonNetworks(verifyTask.networks)) {
+      const connection = connections[network]
 
-    if (!IS_DEV) {
-      await tx.wait(WAIT_CONFIRMATIONS)
+      if (!connection) {
+        continue
+      }
+
+      const { rpcUrl } = connection
+      const tx = await sendVerificationToken(currentWallet, rpcUrl, verificationContractAddress, smartAccountAddress)
+      await Verify.updateStatusById(
+        verifyTask.id,
+        Verify.VerifySmartAccountStatus.SUCCESS,
+        JSON.stringify({ txHash: tx.hash }),
+      )
+
+      if (!IS_DEV) {
+        await tx.wait(WAIT_CONFIRMATIONS)
+      }
+      log(`Smart account ${smartAccountAddress} verified successfully!`)
     }
-    log(`Smart account ${smartAccountAddress} verified successfully!`)
   } catch (e) {
     const errorMessage = (e as Error).message
     log(`Verification failed with error: ${errorMessage}`)
@@ -206,13 +226,39 @@ async function start(): Promise<void> {
     googleVerificationContractAddress,
     farcasterVerificationContractAddress,
     telegramVerificationContractAddress,
+    allowedNetworks,
+    otherNetworks,
   } = getConfigData()
 
-  const connection: IConnection = {
-    rpcUrl,
-    accountFactoryAddress,
-    entryPointAddress,
+  // object with network names as keys and connection data as values. {'optimism-mainnet': {rpcUrl, accountFactoryAddress, entryPointAddress}}
+  const otherNetworksObject = JSON.parse(otherNetworks)
+  // list of networks. example: ['optimism-mainnet']
+  const allowedNetworksList = JSON.parse(allowedNetworks)
+
+  if (!otherNetworksObject) {
+    throw new Error('Other networks is empty')
   }
+
+  if (!Object.keys(allowedNetworksList) || allowedNetworksList.length === 0) {
+    throw new Error('Allowed networks list is empty')
+  }
+
+  log(
+    `Allowed networks: ${allowedNetworksList.join(', ')}. Other networks: ${Object.keys(otherNetworksObject).join(', ')}`,
+  )
+
+  const connections: { [key: string]: IConnection } = {
+    'optimism-mainnet': {
+      rpcUrl,
+      accountFactoryAddress,
+      entryPointAddress,
+    },
+  }
+  allowedNetworksList.forEach((network: string) => {
+    if (otherNetworksObject[network]) {
+      connections[network] = otherNetworksObject[network]
+    }
+  })
   const wallets = getWallets(deployerMnemonic, 1)
   log(`RPC_URL: ${rpcUrl}`)
   log(`ACCOUNT_FACTORY_ADDRESS: ${accountFactoryAddress}`)
@@ -232,7 +278,7 @@ async function start(): Promise<void> {
       const deployTask = await Deploy.getOneByStatus(Deploy.DeploySmartAccountStatus.IDLE)
 
       if (deployTask) {
-        await deploy(deployTask, nextWallet(), connection)
+        await deploy(deployTask, nextWallet(), connections)
       }
 
       const verifyTask = await Verify.getOneByStatus(VerifySmartAccountStatus.IDLE)
@@ -252,7 +298,7 @@ async function start(): Promise<void> {
           throw new Error(`Unknown service ID: ${rawSignature.service_id}`)
         }
 
-        await verify(verifyTask, nextWallet(), connection.rpcUrl, verificationContractAddress)
+        await verify(verifyTask, nextWallet(), connections, verificationContractAddress)
       }
     } catch (e) {
       // eslint-disable-next-line no-console

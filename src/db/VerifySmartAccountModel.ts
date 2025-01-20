@@ -22,6 +22,11 @@ export interface VerifySmartAccountModel {
   smart_account_address: string
 
   /**
+   * Networks list in form of JSON or empty string.
+   */
+  networks: string
+
+  /**
    * ID of the raw signature.
    */
   raw_signature_id: bigint | number

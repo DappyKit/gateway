@@ -27,6 +27,11 @@ export interface DeploySmartAccountModel {
   smart_account_address: string
 
   /**
+   * Networks list in form of JSON or empty string.
+   */
+  networks: string
+
+  /**
    * Additional data
    */
   data?: string
