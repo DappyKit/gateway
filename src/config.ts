@@ -68,6 +68,17 @@ export interface IConfigData {
    * Clickcaster API key
    */
   clickcasterApiKey: string
+
+  /**
+   * Allowed networks names array for deployer and verifier in JSON format
+   */
+  allowedNetworks: string
+
+  /**
+   * Configurations for other networks in JSON format, used in allowedNetworks.
+   * The format: {network1:{accountFactoryAddress: string, entryPointAddress: string, rpcUrl: string}, network2: {...}}
+   */
+  otherNetworks: string
 }
 
 /**
@@ -87,6 +98,8 @@ let configData: IConfigData = {
   farcasterMaxMinutesData: 0,
   publicUrl: '',
   clickcasterApiKey: '',
+  allowedNetworks: '',
+  otherNetworks: '',
 }
 
 /**
@@ -153,6 +166,14 @@ export function loadConfig(): void {
     throw new Error('CLICKCASTER_API_KEY env variable not set')
   }
 
+  if (!process.env.ALLOWED_NETWORKS) {
+    throw new Error('ALLOWED_NETWORKS env variable not set')
+  }
+
+  if (!process.env.OTHER_NETWORKS) {
+    throw new Error('OTHER_NETWORKS env variable not set')
+  }
+
   configData.googleClientId = process.env.GOOGLE_CLIENT_ID
   configData.accountFactoryAddress = process.env.ACCOUNT_FACTORY_ADDRESS
   configData.entryPointAddress = process.env.ENTRY_POINT_ADDRESS
@@ -166,6 +187,8 @@ export function loadConfig(): void {
   configData.farcasterMaxMinutesData = Number(process.env.FARCASTER_MAX_MINUTES_DATA)
   configData.publicUrl = process.env.PUBLIC_URL
   configData.clickcasterApiKey = process.env.CLICKCASTER_API_KEY
+  configData.allowedNetworks = process.env.ALLOWED_NETWORKS
+  configData.otherNetworks = process.env.OTHER_NETWORKS
 }
 
 /**

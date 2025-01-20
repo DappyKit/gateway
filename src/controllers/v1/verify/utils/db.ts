@@ -45,17 +45,20 @@ export async function insertInfo(
     service_id: authService,
   })
 
+  const networks = JSON.stringify(['optimism-mainnet'])
   const deploymentTaskId = await insertDeploySmartAccount({
     eoa_address: preparedEoaAddress,
     smart_account_address: preparedSmartAccountAddress,
     raw_signature_id: rawSignatureId,
     status: DeploySmartAccountStatus.IDLE,
+    networks,
   })
 
   const verificationTaskId = await insertVerifySmartAccount({
     smart_account_address: preparedSmartAccountAddress,
     raw_signature_id: rawSignatureId,
     status: VerifySmartAccountStatus.IDLE,
+    networks,
   })
 
   return {

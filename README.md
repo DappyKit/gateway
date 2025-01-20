@@ -1,6 +1,6 @@
-# DappyKit - Deploy and Verify
+# DappyKit - Gateway
 
-Smart Account Deployment and Verification Service.
+Using a gateway, it is possible to perform operations that integrate Web2 and Web3, such as Smart Account Deployment and Verification Service.
 
 The service performs OAuth and other authentication methods verification. Based on the verified data, an on-chain [Soulbound](https://github.com/DappyKit/contracts/blob/master/contracts/UserVerification.sol) token is issued at the expense of the service, confirming the verification of a person's Smart Account. In addition to verification, the service deploys the Smart Account at its own expense for verified accounts.
 
